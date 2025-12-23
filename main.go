@@ -138,7 +138,7 @@ func main() {
 		AddButton("Delete Item", func() {
 			idStr := itemIDInput.GetText()
 
-			if idStr != "" {
+			if idStr == "" {
 				fmt.Fprintln(inventoryList, "Please enter an item ID to delete")
 				return
 			}
