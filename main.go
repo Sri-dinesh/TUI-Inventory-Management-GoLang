@@ -18,8 +18,9 @@ import (
 	"fmt"
 	"log"
 	"os"
-	// "strconv"
-	// "github.com/rivo/tview"
+	"strconv"
+
+	"github.com/rivo/tview"
 )
 
 // Define an item structure that will hold the stock information
@@ -76,4 +77,91 @@ func deleteItem(index int) {
 
 	saveInventory()
 
+}
+
+
+func main() {
+
+	// Creata a new TUI 
+
+	app := tview.NewApplication()
+	loadInventory()
+	inventoryList := tview.NewTextView().SetDynamicColors(true).SetWordWrap(true)
+
+	inventoryList.SetBorder(true).SetTitle("Inventory Items - TUI")
+
+
+	refreshInventory := func() {
+		inventoryList.Clear()
+
+		if len(inventory) == 0 {
+			fmt.Fprintln(inventoryList, "No items in inventory.")
+		} else {
+			for i, item := range inventory {
+				fmt.Fprintf(inventoryList, "[%d] %s (Stock: %d)\n", i+1, item.Name, item.Stock)
+			}
+		}
+	}
+
+	// creating input fields
+	
+	itemNameInput := tview.NewInputField().SetLabel("Item Name: ")
+	itemStockInput := tview.NewInputField().SetLabel("Stock: ")
+	itemIDInput := tview.NewInputField().SetLabel("Item ID to delete: ")
+
+
+	// creating forms
+
+	form := tview.NewForm().
+		AddFormItem(itemNameInput).
+		AddFormItem(itemStockInput).
+		AddFormItem(itemIDInput).
+		AddButton("Add Item", func() {
+			name := itemNameInput.GetText()
+			stock := itemStockInput.GetText()
+
+			if name != "" && stock != "" {
+				quantity, err := strconv.Atoi(stock)
+
+				if err != nil {
+					fmt.Fprintln(inventoryList, "Invalid stock value.")
+					return
+				}
+
+				inventory = append(inventory, Item{Name: name, Stock: quantity})
+				saveInventory()
+				refreshInventory()
+				itemNameInput.SetText("")
+				itemStockInput.SetText("")
+			}
+		}).
+		AddButton("Delete Item", func() {
+			idStr := itemIDInput.GetText()
+
+			if idStr != "" {
+				fmt.Fprintln(inventoryList, "Please enter an item ID to delete")
+				return
+			}
+
+
+			id, err := strconv.Atoi(idStr)
+
+			if err != nil || id < 1 || id > len(inventory) {
+				fmt.Fprintln(inventoryList, "Invalid item ID.")
+				return 
+			}
+			
+			deleteItem(id - 1)
+			fmt.Fprintf(inventoryList, "Item [%d] delete. \n", id)
+			refreshInventory()
+			itemIDInput.SetText("")
+		}).
+		AddButton("Exit", func() {
+			
+		})
+
+
+
+
+	
 }
