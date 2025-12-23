@@ -157,11 +157,23 @@ func main() {
 			itemIDInput.SetText("")
 		}).
 		AddButton("Exit", func() {
-			
+			app.Stop()
 		})
 
 
+		form.SetBorder(true).SetTitle("Inventory Management - TUI").SetTitleAlign(tview.AlignLeft)
 
+		
 
-	
+		flex := tview.NewFlex().
+			AddItem(inventoryList, 0, 1, false).
+			AddItem(form, 0, 1, true)
+
+		refreshInventory()
+
+		if err := app.SetRoot(flex, true).Run();
+		
+		err != nil {
+			panic(err)
+		}
 }
